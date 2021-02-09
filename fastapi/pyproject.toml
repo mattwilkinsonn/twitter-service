@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "term-project-protagonist"
+version = "0.1.0"
+description = ""
+authors = ["Matt Wilkinson <mattwilki17@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+fastapi = "^0.61.1"
+pymongo = "^3.11.0"
+requests = "^2.24.0"
+elastic-apm = "^5.8.1"
+elasticsearch = "^7.9.1"
+boto3 = "^1.14.60"
+requests-aws4auth = "^1.0"
+pydantic = "^1.6.1"
+python-dotenv = "^0.14.0"
+elasticsearch-dsl = "^7.2.1"
+aiohttp = "^3.6.2"
+uvicorn = "^0.11.8"
+sentry-sdk = "^0.17.6"
+sqlalchemy = "^1.3.19"
+alembic = "^1.4.3"
+psycopg2-binary = "^2.8.6"
+argon2-cffi = "^20.1.0"
+python-jose = "^3.2.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.0.2"
+black = { version = "^20.8b1", allow-prereleases = true }
+flake8 = "^3.8.3"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

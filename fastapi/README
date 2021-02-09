@@ -1,0 +1,3 @@
+to launch server in development:
+uvicorn app.main:app --reload
+other methods don't work due to the way Python handles relative imports

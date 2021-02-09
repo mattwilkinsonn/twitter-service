@@ -1,0 +1,44 @@
+{
+    "order" : 0,
+    "index_patterns" : [
+      "tweets-*-*"
+    ],
+    "settings" : { },
+    "mappings" : {
+      "properties" : {
+        "created_at" : {
+          "format" : "epoch_second",
+          "type" : "date"
+        },
+        "favorite_count" : {
+          "type" : "long"
+        },
+        "text" : {
+          "type" : "text"
+        },
+        "author_id" : {
+          "type" : "keyword"
+        },
+        "lang" : {
+          "type" : "keyword"
+        },
+        "reply_count" : {
+          "type" : "long"
+        },
+        "quote_count" : {
+          "type" : "long"
+        },
+        "url" : {
+          "type" : "keyword"
+        },
+        "retweet_count" : {
+          "type" : "long"
+        },
+        "s3_file_path" : {
+          "type" : "keyword"
+        }
+      }
+    },
+    "aliases" : { }
+  
+}

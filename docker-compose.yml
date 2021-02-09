@@ -1,0 +1,114 @@
+version: "3"
+services:
+  postgres:
+    image: postgres:12
+    container_name: postgres
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=db
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    ports:
+      - "5432:5432"
+
+  fastapi:
+    build: ./fastapi
+    container_name: fastapi
+    environment:
+      - AWS_PROFILE=default
+      - AWS_REGION=us-east-1
+      - STORAGE_BUCKET=s3://protag-au-twitter/ #this will need to be the proper aws bucket
+      - ENV=local # change on EC2
+      - ES_HOST=http://elasticsearch/ # change on EC2
+      - SENTRY_DSN=https://0815e2e14f1f40759b46be465942634f@o127707.ingest.sentry.io/5431348
+      - LOGGING_LEVEL=INFO
+    #command: python manage.py runserver 0.0.0.0:8000
+    #command: python ./app/main.py #this will need to be updated to run the main.py
+    depends_on:
+      - postgres
+      - docker-host
+      - reverse-proxy
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.fastapi.rule=PathPrefix(`/api`) || PathPrefix(`/docs`) || PathPrefix(`/redoc`)
+      - traefik.http.services.fastapi.loadbalancer.server.port=80
+
+    # ports:
+    #   - "8000:80"
+    volumes:
+      - ~/.aws/:/root/.aws #this is useful for mapping the host aws credentails to the container
+
+  twitter-firehose:
+    build: ./twitter-firehose
+    container_name: twitter-firehose
+    environment:
+      - AWS_PROFILE=default
+      - AWS_REGION=us-east-1
+      - ENV=local # change on EC2
+      - SENTRY_DSN=https://0815e2e14f1f40759b46be465942634f@o127707.ingest.sentry.io/5431348
+      - TWITTER_CONSUMER_KEY=ShhShvbKXaBwWl0YToShuZzcC
+      - TWITTER_CONSUMER_SECRET=zmKMHJ4vreAAgeZjj9zwB87Fjf1EKIsDmwtMEv9Z1DV5JCmWkS
+      - TWITTER_ACCESS_TOKEN_KEY=2565938970-F0fN0eKtoQJZ3lGvLE49UoDxpIrkJPExpdtHXkn
+      - TWITTER_ACCESS_TOKEN_SECRET=te3mN53ziFFOi6ujZiQA9dnK7HcR58hQ2pS44sskIl1RH
+      - TWITTER_BEARER_TOKEN=AAAAAAAAAAAAAAAAAAAAAPDgIwEAAAAAUjUUzx4WdxKWEXE0pTjcKZibeq4%3D8lqY7iQtHvmea3OpzNeK0LukS6HDGlTuWzUlKjOvwZfnR3GDmw
+      - LOGGING_LEVEL=INFO
+    #command: python ./stream.py
+    volumes:
+      # - /root/.aws/:/root/.aws uncomment if on EC2
+      - ~/.aws/:/root/.aws
+      - ./data/twitter-firehose:/twitter-firehose
+
+  s3-es:
+    build: ./s3-es
+    container_name: s3-es
+    environment:
+      - AWS_PROFILE=default
+    volumes:
+      - ~/.aws/:/root/.aws
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=pgadmin4@pgadmin.org
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    volumes:
+      - ./data/pgadmin:/root/.pgadmin
+    ports:
+      - "5411:80"
+
+  docker-host:
+    image: qoomon/docker-host
+    container_name: dockerhost
+    cap_add: ["NET_ADMIN", "NET_RAW"]
+    mem_limit: 8M
+    restart: on-failure
+
+  reverse-proxy:
+    # The official v2 Traefik docker image
+    image: traefik:v2.3
+    # Enables the web UI and tells Traefik to listen to docker
+    command: --api.insecure=true --providers.docker
+    ports:
+      # The HTTP port
+      - "80:80"
+      # HTTPS
+      - "443:443"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8080:8080"
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  frontend:
+    build: ./frontend
+    container_name: protag-frontend
+    environment:
+      - AWS_PROFILE=default
+    depends_on:
+      - fastapi
+      - reverse-proxy
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.frontend.rule=PathPrefix(`/`)
+      - traefik.http.services.frontend.loadbalancer.server.port=80

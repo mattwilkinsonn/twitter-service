@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "protagonist-tweet-streamer"
+version = "0.1.0"
+description = "tweet streamer to AWS Kinesis Firehose"
+authors = ["Matt Wilkinson <mattwilki17@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+tweepy = "^3.9.0"
+boto3 = "^1.15.1"
+pydantic = "^1.6.1"
+python-dotenv = "^0.14.0"
+sentry-sdk = "^0.17.7"
+requests-oauthlib = "^1.3.0"
+backoff = "^1.10.0"
+
+[tool.poetry.dev-dependencies]
+flake8 = "^3.8.3"
+pytest = "^6.0.2"
+black = { version = "^20.8b1", allow-prereleases = true }
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
